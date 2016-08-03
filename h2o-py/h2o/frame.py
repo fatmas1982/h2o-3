@@ -1334,18 +1334,27 @@ class H2OFrame(object):
         if self.ncol != 1 or self.nrow != 1: raise ValueError("Not a 1x1 Frame")
         return float(self.flatten())
 
-    def drop(self, i):
+    def drop(self, cols):
         """Drop a column from the current H2OFrame.
 
         Parameters
         ----------
-          i : str, int
-            The column to be dropped
+        cols : list of strings or ints
+            The column(s) to be dropped
 
         Returns
         -------
-          H2OFrame with the column at index i dropped. Returns a new H2OFrame.
+        H2OFrame with the column(s) at index i dropped. Returns a new H2OFrame.
         """
+        fr = self
+        if type(cols) is str:
+            fr = fr.__drop(cols,axis)
+        elif type(cols) is list:
+            for col in cols:
+                fr = fr.__drop(col,axis)
+        return fr
+
+    def __drop(self, i):
         if is_str(i): i = self.names.index(i)
         fr = H2OFrame._expr(expr=ExprNode("cols", self, -(i + 1)), cache=self._ex._cache)
         fr._ex._cache.ncols -= 1
